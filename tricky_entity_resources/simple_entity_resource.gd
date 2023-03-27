@@ -136,4 +136,4 @@ func get_relative_value() -> float:
 	if max_value == 0:
 		return 0
 
-	return float(value) / float(max_value)
+	return float(value) / float(max_value - min_value)
