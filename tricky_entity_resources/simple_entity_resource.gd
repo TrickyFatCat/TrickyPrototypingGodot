@@ -5,6 +5,7 @@ extends Node
 
 signal value_increased(new_value: int, delta_value: int)
 signal value_decreased(new_value: int, delta_value: int)
+signal value_reached_minimum()
 signal min_value_increased(new_min_value: int, delta_value: int)
 signal min_value_decreased(new_min_value: int, delta_value: int)
 signal max_value_increased(new_max_value: int, delta_value: int)
@@ -64,6 +65,9 @@ func decrease_value(amount: int) -> bool:
 
 	value -= amount
 	value_decreased.emit(value, amount)
+	
+	if value <= min_value:
+		value_reached_minimum.emit()
 
 	return true
 
