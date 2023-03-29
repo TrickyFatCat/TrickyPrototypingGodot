@@ -8,20 +8,15 @@ signal max_value_increased(new_max_value: float, delta_value: float)
 signal max_value_decreased(new_max_value: float, delta_value: float)
 signal auto_increment_started()
 signal auto_increment_finished()
-signal autodecrease_started()
-signal autodecrease_finished()
+signal auto_decrement_started()
+signal auto_decrement_finished()
 
 
-@export var initial_value : float = 100.0 :
-	set(new_value):
-		pass
-	get:
-		return initial_value
-
+@export var initial_value : float = 100.0
 @export var max_value : float = 100.0
 @onready var _value : float = maxf(initial_value, 0.0)
 
-@export_category("Auto-Inceremnt")
+@export_category("Auto-Incerement")
 @export var auto_increment_enabled : bool = false 
 
 @export_range(0.0, 1.0) var auto_increment_threshold : float = 1.0 : 
@@ -55,6 +50,40 @@ signal autodecrease_finished()
 var _auto_increment_start_delay_timer : Timer
 var _auto_increment_timer : Timer 
 
+@export_category("Auto-Decrement")
+@export var auto_decrement_enabled : bool = false 
+
+@export_range(0.0, 1.0) var auto_decrement_threshold : float = 1.0 : 
+	set(new_value):
+		auto_decrement_threshold = clampf(new_value, 0.0, 1.0)
+	get:
+		return auto_decrement_threshold
+
+@export var auto_decrement_value : float = 1.0 :
+	set(new_value):
+		auto_decrement_value = maxf(new_value, 0.0)
+	get:
+		return auto_decrement_value
+
+@export var auto_decrement_rate : float = 1.0 :
+	set(new_value):
+		auto_decrement_rate = maxf(new_value, 0.0)
+		_auto_decrement_delay = _calculate_delay(auto_increment_rate)
+		pass
+	get:
+		return auto_decrement_rate
+
+@export var auto_decrement_start_delay : float = 1.0 : 
+	set(new_value):
+		auto_decrement_start_delay = new_value
+	get:
+		return auto_decrement_start_delay
+
+@onready var _auto_decrement_delay : float = _calculate_delay(auto_increment_rate)
+
+var _auto_decrement_start_delay_timer : Timer
+var _auto_decrement_timer : Timer 
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_DISABLED
@@ -63,6 +92,16 @@ func _ready() -> void:
 	_auto_increment_timer.timeout.connect(increase_value.bind(auto_increment_value, true))
 	_auto_increment_start_delay_timer = _create_timer("AutoIncrementStartDelay")
 	_auto_increment_start_delay_timer.timeout.connect(_start_auto_increment)
+	if !_start_auto_increment_delay():
+		_start_auto_increment()
+
+	_auto_decrement_timer = _create_timer("AutoDecrementTimer")
+	_auto_decrement_timer.timeout.connect(decrease_value.bind(auto_decrement_value))
+	_auto_decrement_start_delay_timer = _create_timer("AutoDecrementStartDelay")
+	_auto_decrement_start_delay_timer.timeout.connect(_start_auto_decrement)
+	if !_start_auto_decrement_delay():
+		_start_auto_decrement()
+
 	pass
 
 
@@ -78,8 +117,11 @@ func increase_value(amount: float, clamp_to_max: bool = true) -> bool:
 	value_increased.emit(_value, amount)
 
 	if get_relative_value() >= auto_increment_threshold:
-		_auto_increment_timer.stop()
-		_stop_auto_increament()
+		_auto_increment_start_delay_timer.stop()
+		_stop_auto_increment()
+
+	_start_auto_decrement_delay()
+	_start_auto_decrement()
 
 	return true
 
@@ -91,16 +133,14 @@ func decrease_value(amount: float) -> bool:
 	amount = _value if amount > _value else amount
 	_value -= amount
 	value_decreased.emit(_value, amount)
+	
+	if get_relative_value() <= auto_decrement_threshold:
+		_auto_decrement_start_delay_timer.stop()
+		_stop_auto_decrement()
 
-	if get_relative_value() >= auto_increment_threshold:
-		return true
-	
-	if auto_increment_start_delay > 0.0:
-		_start_auto_increment_delay()
-		return true
-	
+	_start_auto_increment_delay()
 	_start_auto_increment()
-	
+
 	return true
 
 
@@ -159,11 +199,15 @@ func _create_timer(name : String) -> Timer:
 	return timer
 
 
-func _start_auto_increment_delay() -> void:
+func _start_auto_increment_delay() -> bool:
+	if auto_increment_start_delay <= 0.0:
+		return false
+
 	if !_auto_increment_start_delay_timer.is_stopped():
 		_auto_increment_start_delay_timer.stop()
 	
 	_auto_increment_start_delay_timer.start(auto_increment_start_delay)
+	return true
 
 
 func _start_auto_increment() -> void:
@@ -174,12 +218,44 @@ func _start_auto_increment() -> void:
 	auto_increment_started.emit()
 
 	
-func _stop_auto_increament() -> void:
+func _stop_auto_increment() -> void:
 	if _auto_increment_timer.is_stopped():
 		return
 
 	_auto_increment_timer.stop()
 	auto_increment_finished.emit()
 
+
 func is_auto_increment_active() -> bool:
 	return !_auto_increment_timer.is_stopped()
+
+
+func _start_auto_decrement_delay() -> bool:
+	if auto_decrement_start_delay <= 0.0:
+		return false
+
+	if !_auto_decrement_start_delay_timer.is_stopped():
+		_auto_decrement_start_delay_timer.stop()
+	
+	_auto_decrement_start_delay_timer.start(auto_decrement_start_delay)
+	return true
+
+
+func _start_auto_decrement() -> void:
+	if !_auto_decrement_timer.is_stopped() || !auto_decrement_enabled:
+		return
+	
+	_auto_decrement_timer.start(_auto_decrement_delay)
+	auto_decrement_started.emit()
+
+	
+func _stop_auto_decrement() -> void:
+	if _auto_decrement_timer.is_stopped():
+		return
+
+	_auto_decrement_timer.stop()
+	auto_decrement_finished.emit()
+
+
+func is_auto_decrement_active() -> bool:
+	return !_auto_decrement_timer.is_stopped()
