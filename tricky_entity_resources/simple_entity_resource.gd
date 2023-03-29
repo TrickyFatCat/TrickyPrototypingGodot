@@ -12,12 +12,7 @@ signal max_value_increased(new_max_value: int, delta_value: int)
 signal max_value_decreased(new_max_value: int, delta_value: int)
 
 
-@export var initial_value : int = 100 :
-	set(new_value):
-		pass
-	get:
-		return initial_value
-		
+@export var initial_value : int = 100
 @export var min_value : int = 0
 @export var max_value : int = 100
 @onready var _value : int = max(initial_value, 0)
