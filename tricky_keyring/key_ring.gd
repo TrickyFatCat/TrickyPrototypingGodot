@@ -12,20 +12,20 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_DISABLED
 
 
-func add_key(new_key : LockKey) -> bool:
-	if !new_key:
+func add_lock_key(new_lock_key : LockKey) -> bool:
+	if !new_lock_key:
 		return false
 
-	if new_key.is_unique && has_key(new_key):
+	if new_lock_key.is_unique && has_lock_key(new_lock_key):
 		return false
 
-	_lock_keys.push_back(new_key.duplicate())
-	lock_key_added.emit(new_key)
+	_lock_keys.push_back(new_lock_key.duplicate())
+	lock_key_added.emit(new_lock_key)
 	return true
 
 
-func use_key(target_key : LockKey) -> bool:
-	if !target_key || !has_key(target_key):
+func use_lock_key(target_key : LockKey) -> bool:
+	if !target_key || !has_lock_key(target_key):
 		return false
 
 	var lock_key : LockKey = get_lock_key(target_key)
@@ -42,8 +42,8 @@ func use_key(target_key : LockKey) -> bool:
 	return true
 
 
-func remove_key(target_key : LockKey) -> bool:
-	if !target_key || !has_key(target_key):
+func remove_lock_key(target_key : LockKey) -> bool:
+	if !target_key || !has_lock_key(target_key):
 		return false
 
 	var lock_key : LockKey = get_lock_key(target_key)
@@ -57,7 +57,7 @@ func remove_key(target_key : LockKey) -> bool:
 	return true
 
 
-func has_key(target_key : LockKey) -> bool:
+func has_lock_key(target_key : LockKey) -> bool:
 	if !target_key || _lock_keys.is_empty():
 		return false
 
@@ -66,7 +66,7 @@ func has_key(target_key : LockKey) -> bool:
 
 
 func get_lock_key(target_key : LockKey) -> LockKey:
-	if !target_key || !has_key(target_key) || _lock_keys.is_empty():
+	if !target_key || !has_lock_key(target_key) || _lock_keys.is_empty():
 		return null
 
 	var predicate = func(lock_key : LockKey): return lock_key.get_class() == target_key.get_class()
