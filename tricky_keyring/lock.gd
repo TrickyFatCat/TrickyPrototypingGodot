@@ -1,6 +1,8 @@
 class_name Lock
 extends Node
 
+## A simple lock class which can be unlocked and locked with a lock key
+
 signal unlocked()
 signal locked()
 
