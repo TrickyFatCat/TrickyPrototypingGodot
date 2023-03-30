@@ -12,7 +12,7 @@ signal max_value_decreased(new_max_value: int, delta_value: int)
 
 @export var initial_value : int = 100
 @export var max_value : int = 100
-@onready var _value : int = max(initial_value, 0)
+@onready var current_value : int = max(initial_value, 0)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_DISABLED
@@ -20,28 +20,28 @@ func _ready() -> void:
 
 
 func increase_value(amount: int, clamp_to_max: bool = true) -> bool:
-	if amount <= 0 || clamp_to_max && _value >= max_value:
+	if amount <= 0 || clamp_to_max && current_value >= max_value:
 		return false
 
 	if clamp_to_max:
-		var delta_value : int = max_value - _value
+		var delta_value : int = max_value - current_value
 		amount = delta_value if amount > delta_value else amount
 
-	_value += amount
-	value_increased.emit(_value, amount)
+	current_value += amount
+	value_increased.emit(current_value, amount)
 
 	return true
 
 
 func decrease_value(amount: int) -> bool:
-	if amount <= 0 || _value <= 0:
+	if amount <= 0 || current_value <= 0:
 		return false
 
-	amount = _value if amount > _value else amount
-	_value -= amount
-	value_decreased.emit(_value, amount)
+	amount = current_value if amount > current_value else amount
+	current_value -= amount
+	value_decreased.emit(current_value, amount)
 	
-	if _value <= 0:
+	if current_value <= 0:
 		value_reached_zero.emit()
 
 	return true
@@ -55,7 +55,7 @@ func increase_max_value(amount: int, clamp_value: bool = false) -> bool:
 	max_value_increased.emit(max_value, amount)
 
 	if clamp_value:
-		var delta_value : int = max_value - _value
+		var delta_value : int = max_value - current_value
 		increase_value(delta_value)
 
 	return true
@@ -70,14 +70,14 @@ func decrease_max_value(amount: int, clamp_value: bool = true) -> bool:
 	max_value_decreased.emit(max_value, amount)
 
 	if clamp_value:
-		var delta_value : int = abs(max_value - _value)
+		var delta_value : int = abs(max_value - current_value)
 		decrease_value(delta_value)
 
 	return true
 
 
-func get_relative_value() -> float:
+func get_relative_current_value() -> float:
 	if max_value == 0:
 		return 0
 
-	return float(_value) / float(max_value)
+	return float(current_value) / float(max_value)
