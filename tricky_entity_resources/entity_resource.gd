@@ -16,7 +16,7 @@ signal auto_decrement_finished()
 @export var max_value : float = 100.0
 @onready var current_value : float = maxf(initial_value, 0.0)
 
-@export_category("Auto-Incerement")
+@export_category("Auto-Increment")
 
 ## If true, value will automatically incemented
 @export var auto_increment_enabled : bool = false 
