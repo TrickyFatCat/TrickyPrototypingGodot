@@ -35,7 +35,7 @@ signal auto_decrement_finished()
 	get:
 		return auto_increment_value
 
-## Frequency of auto-incement ticks
+## Frequency of auto-increment ticks
 @export var auto_increment_rate : float = 1.0 :
 	set(new_value):
 		auto_increment_rate = maxf(new_value, 0.0)
@@ -61,7 +61,7 @@ var _auto_increment_timer : Timer
 ## If true, value will automatically decremented 
 @export var auto_decrement_enabled : bool = false 
 
-## If relative value < threshold, auto-decrement will be activated
+## If relative current_value > threshold, auto-decrement will be activated
 @export_range(0.0, 1.0) var auto_decrement_threshold : float = 1.0 : 
 	set(new_value):
 		auto_decrement_threshold = clampf(new_value, 0.0, 1.0)
@@ -75,6 +75,7 @@ var _auto_increment_timer : Timer
 	get:
 		return auto_decrement_value
 
+## Frequency of auto-decrement ticks
 @export var auto_decrement_rate : float = 1.0 :
 	set(new_value):
 		auto_decrement_rate = maxf(new_value, 0.0)
@@ -83,7 +84,8 @@ var _auto_increment_timer : Timer
 	get:
 		return auto_decrement_rate
 
-@export var auto_decrement_start_delay : float = 1.0 : 
+## Time after which auto-decrement activates
+@export var auto_decrement_start_delay : float = 1.0 :  
 	set(new_value):
 		auto_decrement_start_delay = new_value
 	get:
