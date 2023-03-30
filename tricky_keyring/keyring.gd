@@ -1,4 +1,4 @@
-class_name KeyRing
+class_name Keyring
 extends Node
 
 signal lock_key_added(lock_key : LockKey)
