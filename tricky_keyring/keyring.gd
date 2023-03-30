@@ -47,7 +47,7 @@ func use_lock_key(target_lock_key : LockKey) -> bool:
 
 
 ## Removes first lock key of a given class from the array
-func remove_key(target_lock_key : LockKey) -> bool:
+func remove_lock_key(target_lock_key : LockKey) -> bool:
 	if !target_lock_key || !has_lock_key(target_lock_key):
 		return false
 
