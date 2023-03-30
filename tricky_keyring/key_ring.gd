@@ -24,11 +24,11 @@ func add_lock_key(new_lock_key : LockKey) -> bool:
 	return true
 
 
-func use_lock_key(target_key : LockKey) -> bool:
-	if !target_key || !has_lock_key(target_key):
+func use_lock_key(target_lock_key : LockKey) -> bool:
+	if !target_lock_key || !has_lock_key(target_lock_key):
 		return false
 
-	var lock_key : LockKey = get_lock_key(target_key)
+	var lock_key : LockKey = get_lock_key(target_lock_key)
 
 	if !lock_key:
 		return false
@@ -42,11 +42,11 @@ func use_lock_key(target_key : LockKey) -> bool:
 	return true
 
 
-func remove_lock_key(target_key : LockKey) -> bool:
-	if !target_key || !has_lock_key(target_key):
+func remove_key(target_lock_key : LockKey) -> bool:
+	if !target_lock_key || !has_lock_key(target_lock_key):
 		return false
 
-	var lock_key : LockKey = get_lock_key(target_key)
+	var lock_key : LockKey = get_lock_key(target_lock_key)
 
 	if !lock_key:
 		return false
@@ -57,17 +57,17 @@ func remove_lock_key(target_key : LockKey) -> bool:
 	return true
 
 
-func has_lock_key(target_key : LockKey) -> bool:
-	if !target_key || _lock_keys.is_empty():
+func has_lock_key(target_lock_key : LockKey) -> bool:
+	if !target_lock_key || _lock_keys.is_empty():
 		return false
 
-	var predicate = func(lock_key : LockKey): return lock_key.get_class() == target_key.get_class()
+	var predicate = func(lock_key : LockKey): return lock_key.get_class() == target_lock_key.get_class()
 	return _lock_keys.any(predicate)
 
 
-func get_lock_key(target_key : LockKey) -> LockKey:
-	if !target_key || !has_lock_key(target_key) || _lock_keys.is_empty():
+func get_lock_key(target_lock_key : LockKey) -> LockKey:
+	if !target_lock_key || !has_lock_key(target_lock_key) || _lock_keys.is_empty():
 		return null
 
-	var predicate = func(lock_key : LockKey): return lock_key.get_class() == target_key.get_class()
+	var predicate = func(lock_key : LockKey): return lock_key.get_class() == target_lock_key.get_class()
 	return _lock_keys.filter(predicate)[0]
