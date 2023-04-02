@@ -122,7 +122,7 @@ func increase_value(amount: float, clamp_to_max: bool = true) -> bool:
 		return false
 
 	if clamp_to_max:
-		var delta_value : int = max_value - current_value
+		var delta_value : float = max_value - current_value
 		amount = delta_value if delta_value < amount else amount
 
 	current_value += amount
@@ -164,7 +164,7 @@ func increase_max_value(amount : float, clamp_value: bool = false) -> bool:
 	max_value_increased.emit(amount)
 
 	if clamp_value:
-		var delta_value : int = max_value - current_value
+		var delta_value : float = max_value - current_value
 		increase_value(delta_value)
 
 	return true
@@ -201,11 +201,11 @@ func _calculate_delay(rate : float) -> float:
 	return 1.0 / rate
 
 
-func _create_timer(name : String) -> Timer:
+func _create_timer(timer_name : String) -> Timer:
 	var timer = Timer.new()
 	timer.one_shot = false
 	timer.autostart = false
-	timer.name = name
+	timer.name = timer_name
 	timer.process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_child(timer)
 	return timer
