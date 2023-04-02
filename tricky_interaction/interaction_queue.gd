@@ -1,6 +1,10 @@
 class_name InteractionQueue
 extends Node
 
+signal interaction_started(interaction_target: InteractionHandler)
+signal interaction_stopped(interaction_target: InteractionHandler)
+signal interaction_finished(interaction_target: InteractionHandler)
+
 var _interaction_queue : Array[InteractionHandler]
 var _interaction_target : InteractionHandler
 var _interaction_timer : Timer
@@ -52,21 +56,21 @@ func start_interaction() -> bool:
 
 	var interaction_type : InteractionData.InteractionType = _interaction_target.interaction_data.interaction_type
 
+	if !_interaction_target.start_interaction(self):
+		return false
+
 	match interaction_type:
 		InteractionData.InteractionType.INSTANT:
-			if !_interaction_target.start_interaction(self):
-				return false
+			interaction_started.emit(_interaction_target)
 			return finish_interaction()
-			pass
 
 		InteractionData.InteractionType.CAST:
-			if !_interaction_target.start_interaction(self):
-				return false
-			
+			interaction_started.emit(_interaction_target)
 			_interaction_timer.start(_interaction_target.interaction_data.interaction_duration)
 			pass
 
-	return _interaction_target.start_interaction(self)
+	interaction_started.emit(_interaction_target)
+	return true 
 
 
 func stop_interaction() -> bool:
@@ -79,7 +83,11 @@ func stop_interaction() -> bool:
 	if !_interaction_timer.is_stopped():
 		_interaction_timer.stop()
 
-	return _interaction_target.stop_interaction(self)
+	if !_interaction_target.stop_interaction(self):
+		return false
+
+	interaction_stopped.emit(_interaction_target)
+	return true
 
 
 func finish_interaction() -> bool:
@@ -89,7 +97,11 @@ func finish_interaction() -> bool:
 	if !_interaction_target:
 		return false
 	
-	return _interaction_target.finish_interaction(self)
+	if !_interaction_target.finish_interaction(self):
+		return false
+
+	interaction_finished.emit(_interaction_target)
+	return true
 
 
 func _sort_queue() -> void:
