@@ -1,6 +1,8 @@
 class_name InteractionQueue
 extends Node
 
+signal item_added(item: InteractionHandler)
+signal item_removed(item: InteractionHandler)
 signal interaction_started(interaction_target: InteractionHandler)
 signal interaction_stopped(interaction_target: InteractionHandler)
 signal interaction_finished(interaction_target: InteractionHandler)
@@ -15,18 +17,20 @@ func _ready() -> void:
 
 	_interaction_timer = Timer.new()
 	_interaction_timer.one_shot = true
-	_interaction_timer.auto_start = false
+	_interaction_timer.autostart= false
 	_interaction_timer.name = "InteractionTimer"
-	_interaction_timer.timeout.connect(finish_interaction.bind(self))
+	_interaction_timer.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_interaction_timer)
+	_interaction_timer.timeout.connect(finish_interaction)
 
 
 func add_to_queue(handler: InteractionHandler) -> void:
-	if !handler || !is_in_queue(handler) || !handler.interaction_data:
+	if !handler || is_in_queue(handler) || !handler.interaction_data:
 		return
 
-	_interaction_queue.push_back(handler)
+	_interaction_queue.push_front(handler)
 	handler.tree_exiting.connect(remove_from_queue.bind(handler))
+	item_added.emit(handler)
 	_sort_queue()
 
 
@@ -35,6 +39,7 @@ func remove_from_queue(handler: InteractionHandler) -> void:
 		return
 
 	_interaction_queue.erase(handler)
+	item_removed.emit(handler)
 	_sort_queue()
 
 
@@ -59,17 +64,16 @@ func start_interaction() -> bool:
 	if !_interaction_target.start_interaction(self):
 		return false
 
+	interaction_started.emit(_interaction_target)
+	
 	match interaction_type:
 		InteractionData.InteractionType.INSTANT:
-			interaction_started.emit(_interaction_target)
 			return finish_interaction()
 
 		InteractionData.InteractionType.CAST:
-			interaction_started.emit(_interaction_target)
 			_interaction_timer.start(_interaction_target.interaction_data.interaction_duration)
 			pass
 
-	interaction_started.emit(_interaction_target)
 	return true 
 
 
