@@ -76,6 +76,9 @@ func stop_interaction() -> bool:
 	if !_interaction_target:
 		return false
 
+	if !_interaction_timer.is_stopped():
+		_interaction_timer.stop()
+
 	return _interaction_target.stop_interaction(self)
 
 
