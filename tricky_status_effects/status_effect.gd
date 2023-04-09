@@ -1,6 +1,8 @@
 class_name StatusEffect
 extends Resource
 
+signal deactivated
+
 enum EffectType{
 	POSITIVE,
 	NEGATIVE,
@@ -16,43 +18,47 @@ enum EffectUniqeness{
 @export var name : String = "StatusEffect"
 @export var type : EffectType = EffectType.POSITIVE
 @export var duration : float = 0.0
+@export var uniqueness : EffectUniqeness = EffectUniqeness.PER_INSTIGATOR
 
 var _target : StatusEffectsHandler = null
 var _instigator : Node = null
+var _duration_timer : SceneTreeTimer = null
 
 
-func activate_effect(target: StatusEffectsHandler, instigator: Node = null) -> bool:
+func activate(target: StatusEffectsHandler, instigator: Node = null) -> bool:
 	if !target:
 		return false
 	
 	_target = target
 	_instigator = instigator
+	
+	if duration > 0:
+		_duration_timer = _target.get_tree().create_timer(duration)
+		_duration_timer.timeout.connect(deactivate)
+		
+	_handle_activation()
 	return true
 
 
-func reactivate_effect() -> void:
+func reactivate() -> void:
+	_handle_reactivation()
 	pass
 
 
-func deactivate_effect() -> void:
+func deactivate() -> void:
+	_handle_deactivation()
+	deactivated.emit()
 	pass
 
 
-func remove_effect() -> void:
-	pass
-
-
-func _handle_effect_activation() -> bool:
+func _handle_activation() -> bool:
 	return true
 
 
-func _handle_effect_reactivation() -> void:
+func _handle_reactivation() -> void:
 	pass
 
 
-func _handle_effect_deactivation() -> void:
+func _handle_deactivation() -> void:
 	pass
 
-
-func _handle_effect_removal() -> void:
-	pass
