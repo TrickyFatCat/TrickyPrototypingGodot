@@ -27,14 +27,16 @@ enum ReactivationBehavior{
 @export var type : EffectType = EffectType.POSITIVE
 @export var duration : float = 0.0
 @export var uniqueness : EffectUniqeness = EffectUniqeness.PER_INSTIGATOR
-@export var reactivation_behavior : ReactivationBehavior = ReactivationBehavior.RESET
+@export var duration_reactivation_behavior : ReactivationBehavior = ReactivationBehavior.RESET
+@export var is_stackable : bool = false
+@export var stacks_reactivation_behavior : ReactivationBehavior = ReactivationBehavior.ADD
 @export var initial_stacks : int = 1
 @export var max_stacks : int = 1
 
 var _target : StatusEffectsHandler = null
 var _instigator : Node = null
 var _duration_timer : Timer = null
-var _current_stacks : int = 1
+var _current_stacks : int =  1
 
 
 func activate(target: StatusEffectsHandler, instigator: Node = null) -> bool:
@@ -51,6 +53,9 @@ func activate(target: StatusEffectsHandler, instigator: Node = null) -> bool:
 		_duration_timer.wait_time = duration
 		_duration_timer.timeout.connect(deactivate)
 		_target.add_child(_duration_timer)
+
+	if is_stackable:
+		_current_stacks = initial_stacks
 		
 	_handle_activation()
 	return true
@@ -58,7 +63,7 @@ func activate(target: StatusEffectsHandler, instigator: Node = null) -> bool:
 
 func reactivate() -> void:
 	if _duration_timer && !_duration_timer.is_stopped():
-		match reactivation_behavior:
+		match duration_reactivation_behavior:
 			ReactivationBehavior.RESET:
 				_duration_timer.wait_time = duration
 				pass
@@ -67,12 +72,25 @@ func reactivate() -> void:
 				_duration_timer.wait_time += duration
 				pass
 
+	if is_stackable:
+		match stacks_reactivation_behavior:
+			ReactivationBehavior.RESET:
+				_current_stacks = initial_stacks
+				pass
+			
+			ReactivationBehavior.ADD:
+				increase_stacks()
+				pass
+
 	_handle_reactivation()
 	reactivated.emit()
 	pass
 
 
-func deactivate() -> void:
+func deactivate(remove_all_stacks : bool = false) -> void:
+	if !remove_all_stacks:
+		decrease_satcks()
+
 	_handle_deactivation()
 	deactivated.emit()
 	_duration_timer.queue_free()
@@ -85,7 +103,6 @@ func increase_stacks(amount : int = 1) -> void:
 	
 	_current_stacks = min(_current_stacks + amount, max_stacks)
 	_handle_stacks_increment(amount)
-	reactivate()
 
 
 func decrease_satcks(amount : int = 1) -> void:
@@ -96,7 +113,7 @@ func decrease_satcks(amount : int = 1) -> void:
 	_handle_stacks_decrement(amount)
 
 	if _current_stacks <= 0:
-		deactivate()
+		deactivate(true)
 
 
 func get_time_left() -> float:

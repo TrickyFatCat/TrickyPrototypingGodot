@@ -40,7 +40,7 @@ func apply_status_effect(effect : StatusEffect, instigator : Node = null) -> Sta
 	return status_effect
 
 
-func remove_satus_effect_by_class(effect: StatusEffect) -> bool:
+func remove_satus_effect_by_class(effect : StatusEffect, remove_all_stacks : bool = false) -> bool:
 	if !effect:
 		return false
 
@@ -49,8 +49,9 @@ func remove_satus_effect_by_class(effect: StatusEffect) -> bool:
 	if !status_effect:
 		return false
 	
-	status_effect.deactivate()
+	status_effect.deactivate(remove_all_stacks)
 	return true
+
 
 func get_status_effect_by_class(effect: StatusEffect) -> StatusEffect:
 	var result_effect : StatusEffect = null
