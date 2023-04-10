@@ -26,6 +26,7 @@ func apply_status_effect(effect : StatusEffect, instigator : Node = null) -> Sta
 			pass
 
 	if status_effect:
+		status_effect.reactivate()
 		return status_effect
 
 	status_effect = effect.duplicate()
