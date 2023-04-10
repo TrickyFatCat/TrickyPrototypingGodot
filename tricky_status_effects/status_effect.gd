@@ -28,10 +28,13 @@ enum ReactivationBehavior{
 @export var duration : float = 0.0
 @export var uniqueness : EffectUniqeness = EffectUniqeness.PER_INSTIGATOR
 @export var reactivation_behavior : ReactivationBehavior = ReactivationBehavior.RESET
+@export var initial_stacks : int = 1
+@export var max_stacks : int = 1
 
 var _target : StatusEffectsHandler = null
 var _instigator : Node = null
 var _duration_timer : Timer = null
+var _current_stacks : int = 1
 
 
 func activate(target: StatusEffectsHandler, instigator: Node = null) -> bool:
@@ -76,6 +79,26 @@ func deactivate() -> void:
 	pass
 
 
+func increase_stacks(amount : int = 1) -> void:
+	if amount <= 0 || _current_stacks >= max_stacks:
+		return
+	
+	_current_stacks = min(_current_stacks + amount, max_stacks)
+	_handle_stacks_increment(amount)
+	reactivate()
+
+
+func decrease_satcks(amount : int = 1) -> void:
+	if amount <= 0:
+		return
+	
+	_current_stacks = max(_current_stacks - amount, 0)
+	_handle_stacks_decrement(amount)
+
+	if _current_stacks <= 0:
+		deactivate()
+
+
 func get_time_left() -> float:
 	if !_duration_timer:
 		return -1.0
@@ -94,3 +117,10 @@ func _handle_reactivation() -> void:
 func _handle_deactivation() -> void:
 	pass
 
+
+func _handle_stacks_increment(amount : int) -> void:
+	pass
+
+
+func _handle_stacks_decrement(amount : int) -> void:
+	pass
