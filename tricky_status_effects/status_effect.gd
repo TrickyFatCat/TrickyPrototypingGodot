@@ -1,7 +1,7 @@
 class_name StatusEffect
 extends Resource
 
-signal deactivated
+signal deactivated(reason : DeactivationReason)
 signal reactivated
 
 enum EffectType{
@@ -23,15 +23,22 @@ enum ReactivationBehavior{
 	CUSTOM
 }
 
+enum DeactivationReason{
+	TIME,
+	STACKS,
+	REMOVAL
+}
+
 @export var name : String = "StatusEffect"
 @export var type : EffectType = EffectType.POSITIVE
-@export var duration : float = 0.0
 @export var uniqueness : EffectUniqeness = EffectUniqeness.PER_INSTIGATOR
+@export var duration : float = 0.0
 @export var duration_reactivation_behavior : ReactivationBehavior = ReactivationBehavior.RESET
 @export var is_stackable : bool = false
 @export var stacks_reactivation_behavior : ReactivationBehavior = ReactivationBehavior.ADD
 @export var initial_stacks : int = 1
 @export var max_stacks : int = 1
+@export var delta_stacks : int = 1
 
 var _target : StatusEffectsHandler = null
 var _instigator : Node = null
@@ -51,7 +58,7 @@ func activate(target: StatusEffectsHandler, instigator: Node = null) -> bool:
 		_duration_timer.one_shot = true
 		_duration_timer.autostart = false
 		_duration_timer.wait_time = duration
-		_duration_timer.timeout.connect(deactivate)
+		_duration_timer.timeout.connect(deactivate.bind(DeactivationReason.TIME))
 		_target.add_child(_duration_timer)
 
 	if is_stackable:
@@ -79,7 +86,7 @@ func reactivate() -> void:
 				pass
 			
 			ReactivationBehavior.ADD:
-				increase_stacks()
+				increase_stacks(delta_stacks)
 				pass
 
 	_handle_reactivation()
@@ -87,12 +94,9 @@ func reactivate() -> void:
 	pass
 
 
-func deactivate(remove_all_stacks : bool = false) -> void:
-	if !remove_all_stacks:
-		decrease_satcks()
-
-	_handle_deactivation()
-	deactivated.emit()
+func deactivate(reason : DeactivationReason) -> void:
+	_handle_deactivation(reason)
+	deactivated.emit(reason)
 	_duration_timer.queue_free()
 	pass
 
@@ -113,7 +117,7 @@ func decrease_satcks(amount : int = 1) -> void:
 	_handle_stacks_decrement(amount)
 
 	if _current_stacks <= 0:
-		deactivate(true)
+		deactivate(DeactivationReason.STACKS)
 
 
 func get_time_left() -> float:
@@ -131,7 +135,7 @@ func _handle_reactivation() -> void:
 	pass
 
 
-func _handle_deactivation() -> void:
+func _handle_deactivation(reason : DeactivationReason) -> void:
 	pass
 
 

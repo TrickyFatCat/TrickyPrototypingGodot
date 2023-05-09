@@ -49,7 +49,11 @@ func remove_satus_effect_by_class(effect : StatusEffect, remove_all_stacks : boo
 	if !status_effect:
 		return false
 	
-	status_effect.deactivate(remove_all_stacks)
+	if !remove_all_stacks:
+		status_effect.decrease_satcks()
+	else:
+		status_effect.deactivate(status_effect.DeactivationReason.REMOVAL)
+
 	return true
 
 
